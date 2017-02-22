@@ -1,7 +1,6 @@
 package client;
 
 import client.model.*;
-import com.sun.corba.se.impl.orbutil.closure.Constant;
 
 import java.util.Random;
 
@@ -18,7 +17,7 @@ import java.util.Random;
 public class AI {
 
     public void doTurn(World game) {
-        // fill this method, we've presented a stupid AI for example!
+
         Random rand = new Random();
         BeetleType defender,attacker;
         Cell[][] cells = game.getMap().getCells();
@@ -30,8 +29,28 @@ public class AI {
         if (game.getCurrentTurn() == 0) {
             AttackerStrategy(game, attacker);
             DefenderStrategy(game, defender);
-        } else {
-            // no strategy change
+        } else if(game.getCurrentTurn() % 10 == 4 && game.getCurrentTurn() > 13) {
+            float avg = avgPowerOfEnemy(cells);
+            for (int i=0;i<cells.length;i++){
+                for (int j=0;j<cells[i].length;j++) {
+                    if (cells[i][j].getBeetleEntity() != null &&  (((Beetle)cells[i][j].getBeetleEntity()).getCellState() == CellState.Ally)){
+                        if(((Beetle)cells[i][j].getBeetleEntity()).getPower() > avg && ((Beetle)cells[i][j].getBeetleEntity()).getBeetleType() == BeetleType.LOW){
+                            game.changeType(((Beetle)cells[i][j].getBeetleEntity()), BeetleType.HIGH);
+                            System.out.println(i + " " + j);
+                        }
+                    }
+                }
+            }
+            for (int i=0;i<cells.length;i++){
+                for (int j=0;j<cells[i].length;j++) {
+                    if (cells[i][j].getBeetleEntity() != null &&  (((Beetle)cells[i][j].getBeetleEntity()).getCellState() == CellState.Ally)){
+                        if(((Beetle)cells[i][j].getBeetleEntity()).getPower() < avg && ((Beetle)cells[i][j].getBeetleEntity()).getBeetleType() == BeetleType.HIGH){
+                            game.changeType(((Beetle)cells[i][j].getBeetleEntity()), BeetleType.LOW);
+                            System.out.println(i + " " + j);
+                        }
+                    }
+                }
+            }
         }
 
     }
@@ -92,6 +111,18 @@ public class AI {
                     CellState.values()[i], CellState.Blank, Move.stepForward);
         }
     }
+    public static float avgPowerOfEnemy(Cell[][] cells){
+        float sum = 0;
+        int counter = 0;
+        for (int i=0;i<cells.length;i++){
+            for (int j=0;j<cells[i].length;j++) {
+                if (cells[i][j].getBeetleEntity() != null &&  (((Beetle)cells[i][j].getBeetleEntity()).getCellState() == CellState.Enemy)){
+                    counter++;
+                    sum += ((Beetle)cells[i][j].getBeetleEntity()).getPower();
+                }
+            }
+        }
+        return sum/counter;
+    }
 
 }
-
